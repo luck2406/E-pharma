@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
+    <title>Inventory</title>
+
+    <style>
+        body {
+            background: rgb(83, 72, 121);
+            background: -moz-linear-gradient(45deg, rgba(83, 72, 121, 1) 5%, rgba(135, 26, 140, 1) 49%, rgba(222, 82, 176, 1) 84%);
+            background: -webkit-linear-gradient(45deg, rgba(83, 72, 121, 1) 5%, rgba(135, 26, 140, 1) 49%, rgba(222, 82, 176, 1) 84%);
+            background: linear-gradient(45deg, rgba(83, 72, 121, 1) 5%, rgba(135, 26, 140, 1) 49%, rgba(222, 82, 176, 1) 84%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#534879", endColorstr="#de52b0", GradientType=1);
+            /* background-color: yellow;*/
+        }
+
+
+        .card {
+            padding: 20px 50px 10px 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(17, 25, 40, 0.75);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.125);
+            width: 50vw;
+        }
+
+        nav {
+            background-color: rgb(11, 13, 56);
+        }
+
+        .formwrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 100vw;
+            height: 90vh;
+        }
+
+        input[type="text"] {
+            width: 400px;
+            padding: 5px 0 5px 10px;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+        }
+
+        input[type='date'] {
+            width: 300px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <a class="nav-link active" aria-current="page" href="/">Add New</a>
+        <a class="nav-link" href="/billing">Billing</a>
+        {% if user.is_authenticated %}
+        <a class="nav-link me2" href="/analyse">Dashboard</a>
+        <a class="nav-link" style="float: right;" href="/signout">Logout</a>
+        {% else %}
+        <a class="nav-link" style="float: right;" href="/login">Login</a>
+        {% endif %}
+    </nav>
+    <div class="formwrap">
+        <form action="" method="post" class="card">
+            {% csrf_token %}
+            <div style="display: flex;">
+                <input type="text" placeholder="Medicine Name" id="medName" name="name" autocomplete="off"
+                    style="width: 320px;" required>
+                <div onclick="add_inventory()" class="btn btn-outline-info"
+                    style="height: 50px; margin-top: 10px; width: 70px; margin-left: 10px;">
+                    Fetch</div>
+            </div>
+            <input type="text" placeholder="Quantity" name="quantity" autocomplete="off" required>
+            <input type="text" placeholder="Tablets per patta" name="TPP" autocomplete="off" required>
+            <input type="text" placeholder="Selling Price" name="price" autocomplete="off" required>
+            <input type="text" placeholder="Purchased Price" name="Pprice" autocomplete="off" required>
+            <input type="text" placeholder="HSN number" name="HSN" autocomplete="off" required>
+            <input type="text" placeholder="Batch Number" name="BatchNo" autocomplete="off" required>
+            <div>
+                <label style="margin-right: 10px; color: white;">Expiry Date: </label>
+                <input type="date" placeholder="Expiry Date" name="expiry" autocomplete="off" required>
+            </div>
+            <input type="text" placeholder="Composition" disabled id="comps" name="composition" autocomplete="off"
+                style="color: black;" required>
+            <input type="text" placeholder="Fetched Name" disabled id="fName" autocomplete="off" style="color: white;"
+                required>
+            <input type="submit" value="Submit" class="btn btn-outline-primary" autocomplete="off"
+                style="margin-top: 20px;" required>
+        </form>
+    </div>
+    <script>
+        function add_inventory() {
+            xhr = new XMLHttpRequest();
+            xhr.open('POST', '/getComposition', true);
+            xhr.setRequestHeader('X-CSRFToken', document.getElementsByName('csrfmiddlewaretoken')[0].value);
+            xhr.send(JSON.stringify({ name: document.getElementById("medName").value }));
+            xhr.onreadystatechange = function () {
+                data = JSON.parse(xhr.responseText);
+                med = data.composition
+                console.log(med)
+                document.getElementById('comps').value = med;
+                document.getElementById('comps').disabled = false;
+                document.getElementById('fName').value = data.medName;
+            }
+
+        }
+
+        // add_inventory()
+    </script>
+</body>
+
+</html>

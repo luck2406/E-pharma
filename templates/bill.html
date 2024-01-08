@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/gh/englishextra/qrjs2@latest/js/qrjs2.min.js"></script>
+    <title>BILL</title>
+    <style>
+        body{
+            margin: 0 20px 0 20px;
+        }
+        table {
+            width: 100vw;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <style type="text/css">
+        *{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        .tg {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .tg td {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg th {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg .tg-0lax {
+            text-align: left;
+            vertical-align: top
+        }
+
+        #inwordsammount {
+            text-transform: capitalize;
+        }
+        .c1{
+            width: 35px;
+        }
+        .c2{
+            width: 270px;
+        }
+        .c3{
+            width: 80px;
+        }
+        .c4{
+            width: 100px;
+        }
+        .c5{
+            width: 100px;
+        }
+        .c6{
+            width: 100px;
+        }
+        .c7{
+            width: 100px;
+        }
+        .c8{
+            width: 100px;
+        }
+    </style>
+    <table class="tg">
+        <thead>
+            <tr>
+                <th class="tg-0lax" colspan="8">GSTIN: {{firmData.GSTNo}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tg-0lax" colspan="8"
+                    style="text-align: center; padding-top: 0px; padding-bottom: 0px; line-height: 16px;">
+                    <h6>GST INVOICE</h6>
+                    <h2 style="margin-top: -8px; margin-bottom: -10px">{{firmData.name}}</h2>
+                    <p>
+                        {{firmData.address1}}
+                        <br>
+                        {{firmData.address2}}
+                        <br>
+                        {{firmData.city}}-{{firmData.state}}-{{firmData.pincode}}
+                    </p>
+                    <p style="width: 100%;"><span style="float:left;">DL No. {{firmData.dlno}}</span> <span>Email:
+                            {{firmData.email}} </span> <span style="float:right;">Phone: {{firmData.phone}}</span></p>
+                </td>
+            </tr>
+            <tr>
+                <td class="tg-0lax" colspan="4" style="border-right: none;">
+                    <p>
+                        Patient Name: {{bill.name}}
+                        <br>
+                        Doctor's Name: {{bill.doctor}}
+                    </p>
+                </td>
+                <td class="tg-0lax" colspan="4" style="text-align: left; border-left: none;">
+                    <p>
+                        Invoice No: {{bill.id}}
+                        <br>
+                        Invoice Date: {{bill.date}}
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td class="tg-0lax c1">S.No</td>
+                <td class="tg-0lax c2">product name</td>
+                <td class="tg-0lax c3">Quantity</td>
+                <td class="tg-0lax c4">HSN</td>
+                <td class="tg-0lax c5">Batch No</td>
+                <td class="tg-0lax c6">Expiry</td>
+                <td class="tg-0lax c7">MRP</td>
+                <td class="tg-0lax c8">Amount</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="tg" style="height: 200px;">
+        <tbody>
+            {% for med in data %}
+            <tr>
+                <td class="tg-0lax c1">{{ forloop.counter }}</td>
+                <td class="tg-0lax c2">{{ med.meds.name }}</td>
+                <td class="tg-0lax c3">{{ med.quantity }}</td>
+                <td class="tg-0lax c4">{{med.meds.HSN}}</td>
+                <td class="tg-0lax c5">{{ med.meds.batchNo }}</td>
+                <td class="tg-0lax c6">{{ med.meds.expiryDate }}</td>
+                <td class="tg-0lax c7" id="MRP">{{ med.meds.price }}</td>
+                <td class="tg-0lax c8" id="GrandTotal"></td>
+                <script>
+                    var GrandTotal = document.getElementById("GrandTotal");
+                    GrandTotal.innerHTML = Math.round(eval('{{ med.meds.price }} * {{med.quantity}}') * 100) / 100;
+                </script>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <table class="tg">
+        <tbody>
+            <tr>
+                <td class="tg-0lax" colspan="4" style="padding: 0; text-align: center;">
+                    <div style="display: flex; align-items: center; padding-left: 50px; ">
+                        Scan through any UPI app (Paytm / Google Pay / PhonePe / BHIM)
+                        <div id="qrpay" style="margin-left: 30px"></div>
+                    </div>
+                </td>
+                <td class="tg-0lax" colspan="4" style="padding: 0 0 0 30px; width: 300px;">
+                    <div style="display: flex; line-height: 20px;">
+                        <p>
+                            Total:
+                            <br>
+                            Discount:
+                            <br>
+                            Grand Total:
+                            <br>
+                            In Words:
+                        </p>
+                        <p style="margin-left: 18px;">
+                            {{bill.subtotal}}
+                            <br>
+                            {{bill.discount}}
+                            <br>
+                            <strong id="totalmoney">
+                                {{bill.total}}
+                            </strong>
+                            <br>
+                            <strong id="inwordsammount"></strong>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="tg-0lax" colspan="4">
+                    <p>
+                        Sold medicines shall be returned within 15 days of purchase between 12:00 PM to 4:00 PM.
+                        <br>
+                        Subject to {{firmData.city}} Jurisdiction.
+                        <br>
+                        <p style="width: 100%; text-align: center;">
+                            Thank you Visit Again
+                        </p>
+                    </p>
+                </td>
+                <td class="tg-0lax" colspan="4" style="display: flex; align-items: center; justify-content: space-around; flex-direction: column; height: 110%; border-left: none; border-top: none;">
+                    <h5> For {{firmData.name}}</h5>
+                    <h5>Authorised Signatory</h5>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        print()
+        var div = document.createElement("div"),
+            text = "upi://pay?pn={{firmData.name}}&pa={{firmData.UPIid}}&cu=INR&am={{bill.total}}",
+            qr = QRCode.generateSVG(text, {
+                ecclevel: "M",
+                fillcolor: "#ffffff",
+                textcolor: "#000000",
+                margin: 4,
+                modulesize: 8
+            });
+        div.appendChild(qr);
+        document.getElementById("qrpay").appendChild(div);
+        document.getElementById("qrpay").childNodes[0].childNodes[0].style.height = "98px";
+
+    </script>
+
+    <script>
+        var a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+        var b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        function inWords(num) {
+            if ((num = num.toString()).length > 9) return 'overflow';
+            n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+            if (!n) return; var str = '';
+            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
+            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
+            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
+            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
+            str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'only ' : '';
+            return str;
+        }
+        document.getElementById('inwordsammount').innerHTML = inWords(document.getElementById('totalmoney').innerHTML.match('(?:[0-9])+')[0]);
+    </script>
+
+</body>
+
+</html>

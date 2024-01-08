@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/5a5ca72989.js" crossorigin="anonymous"></script>
+    <title>Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@200;300,600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+        }
+
+        nav {
+            width: 18vw;
+            background-color: #161a27;
+            height: 100vh;
+            color: white;
+            font-family: 'Raleway', sans-serif;
+            position: fixed;
+        }
+
+        .top {
+            width: 100%;
+            height: 60px;
+            /* background-color: yellow; */
+        }
+
+        .top>h5 {
+            color: #fff;
+            text-align: left;
+            margin-left: 20px;
+            padding-top: 20px;
+            font-size: 18px;
+            font-weight: 300;
+            word-spacing: 10px;
+            font-weight: 400;
+        }
+
+        .navs {
+            margin-top: 50px;
+            width: 100%;
+        }
+
+        .value {
+            height: 30px;
+            padding: 10px 0px 0 30px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .value:hover {
+            background-color: #232a43;
+        }
+
+        .active {
+            background-color: #232a43;
+        }
+
+        .fa-solid {
+            margin-right: 10px;
+        }
+
+        section {
+            margin-left: 18vw;
+            width: 81vw;
+            /* background-color: yellow; */
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        #Sname{
+            width: 500px;
+            padding: 10px;
+            padding-left: 30px;
+            margin: 10px auto 0 auto;
+        }
+        form{
+            width: 80%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            height: 90vh;
+        }
+        input{
+            border-radius: 8px;
+            border: none;
+            padding: 10px;
+            width: 300px;
+            outline: 1px solid black;
+        }
+        button{
+            padding: 2px 5px 2px 5px;
+            margin-top: 10px
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="top">
+            <h5 onclick="window.location.href = '/'">Pharmacy</h5>
+            <div></div>
+        </div>
+        <div class="navs">
+            <div class="value"  onclick="window.location.href = '/inventory'"><i class="fa-solid fa-boxes-stacked"></i>Inventory</div>
+            <div class="value"  onclick="window.location.href = '/oldstock'"><i class="fa-solid fa-cubes-stacked"></i>Old Stock</div>
+            <div class="value"  onclick="window.location.href = '/analyse'"><i class="fa-solid fa-chart-line"></i>Sales</div>
+            <div class="value active" onclick="window.location.href = '/setup'"><i class="fa-solid fa-gears"></i>Setup</div>
+            <div class="value"  onclick="window.location.href = '/backup'"><i class="fa-solid fa-rotate"></i>Backup</div>
+        </div>
+    </nav>
+    <section>
+        <h2 style="color: rgb(7, 7, 65); width: 100%; text-align: center;">Update Shop Information</h2>
+        <form action="" method="post">
+            {%csrf_token%}
+            {% if isData %}
+            <input type="text" placeholder="Shop Name" id="Sname" name="Sname" value="{{data.name}}">
+            <input type="text" placeholder="Address line 1" value="{{data.address1}}" name="address1">
+            <input type="text" placeholder="Addressline 2" value="{{data.address2}}" name="address2">
+            <input type="text" placeholder="City" value = "{{data.city}}" name="city">
+            <input type="text" placeholder="State" value = "{{data.state}}" name="state">
+            <input type="text" placeholder="Zip" value = "{{data.pincode}}" name="pincode">
+            <input type="text" placeholder="Phone" value = "{{data.phone}}" name="phone">
+            <input type="text" placeholder="Email" value = "{{data.email}}" name="email">
+            <input type="text" placeholder="UPI Id" value = "{{data.UPIid}}" name="upiid">
+            <input type="text" placeholder="GST Number" value = "{{data.GSTNo}}" name="gst">
+            <input type="text" placeholder="DL Number" value = '{{data.dlno}}' name="dlno">
+            <button type="submit">Update</button>
+            {%else%}
+            <input type="text" placeholder="Shop Name" id="Sname" name="Sname">
+            <input type="text" placeholder="Address line 1" name="address1">
+            <input type="text" placeholder="Addressline 2" name="address2">
+            <input type="text" placeholder="City" name="city">
+            <input type="text" placeholder="State" name="state">
+            <input type="text" placeholder="Zip" name="pincode">
+            <input type="text" placeholder="Phone" name="phone">
+            <input type="text" placeholder="Email" name="email">
+            <input type="text" placeholder="UPI Id" name="upiid">
+            <input type="text" placeholder="GST Number" name="gst">
+            <input type="text" placeholder="DL Number" name="dlno">
+            <button type="submit">Create</button>
+            
+            {% endif %}
+        </form>
+
+    </section>
+</body>
+</html>

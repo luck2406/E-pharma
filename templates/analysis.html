@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/5a5ca72989.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <title>Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@200;300,600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+        }
+
+        nav {
+            width: 18vw;
+            background-color: #161a27;
+            height: 100vh;
+            color: white;
+            font-family: 'Raleway', sans-serif;
+            position: fixed;
+        }
+
+        .top {
+            width: 100%;
+            height: 60px;
+            /* background-color: yellow; */
+        }
+
+        .top>h5 {
+            color: #fff;
+            text-align: left;
+            margin-left: 20px;
+            padding-top: 20px;
+            font-size: 18px;
+            font-weight: 300;
+            word-spacing: 10px;
+            font-weight: 400;
+        }
+
+        .navs {
+            margin-top: 50px;
+            width: 100%;
+        }
+
+        .value {
+            height: 30px;
+            padding: 10px 0px 0 30px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .value:hover {
+            background-color: #232a43;
+        }
+
+        .active {
+            background-color: #232a43;
+        }
+
+        .fa-solid {
+            margin-right: 10px;
+        }
+
+        section {
+            margin-left: 18vw;
+            width: 81vw;
+            /* background-color: yellow; */
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .upper {
+            width: 85%;
+            height: 300px;
+            /* background-color: yellow; */
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 20px;
+        }
+
+        #sparkline {
+            position: absolute;
+            bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="top">
+            <h5 onclick="window.location.href = '/'">Pharmacy</h5>
+            <div></div>
+        </div>
+        <div class="navs">
+            <div class="value" onclick="window.location.href = '/inventory'"><i class="fa-solid fa-boxes-stacked"></i>Inventory</div>
+            <div class="value" onclick="window.location.href = '/oldstock'"><i class="fa-solid fa-cubes-stacked"></i>Old Stock</div>
+            <div class="value active" onclick="window.location.href = '/analyse'"><i class="fa-solid fa-chart-line" ></i>Sales</div>
+            <div class="value"  onclick="window.location.href = '/setup'"><i class="fa-solid fa-gears"></i>Setup</div>
+            <div class="value"  onclick="window.location.href = '/backup'"><i class="fa-solid fa-rotate"></i>Backup</div>
+            <canvas id="sparkline" width="180" height="70" style="margin-left: 20px;"></canvas>
+        </div>
+    </nav>
+    <section>
+        <div id="sales">
+            {%if isData%}
+            <div>
+                <p
+                    style="margin-left: 50px; margin-top: 10px; font-family: 'Raleway', sans-serif; width: 100%; text-align: center; font-weight: 600;">
+                    Daily sales of {{ salesMonth.Month }}</p>
+                <canvas class="upper" id="dailyReport" height="300"></canvas>
+            </div>
+            <div style="margin-top: 50px;">
+                
+                <p
+                style="margin-left: 50px; margin-top: 10px; font-family: 'Raleway', sans-serif; width: 100%; text-align: center; font-weight: 600;">
+                Top Medicine Sales</p>
+                <canvas class="upper" id="MedStatus" height="300"></canvas>
+            </div>
+            <div style="display: flex; width: 80vw; height: 300px; margin-top: 30px;">
+                <div style="width: 49%;">
+                    <p
+                    style="margin-left: 50px; margin-top: 10px; font-family: 'Raleway', sans-serif; width: 90%; text-align: center; font-weight: 600;">
+                    Quantity sales</p>
+                    <canvas id="quantitySale"></canvas>
+                </div>
+                <div style="width: 49%; height: 50px;">
+                    <p
+                    style="margin-left: 5px; margin-top: 10px; font-family: 'Raleway', sans-serif; width: 100%; text-align: center; font-weight: 600;">
+                    Earning Ratio</p>
+                    <canvas id="earningRatio" width="30"></canvas>
+                </div>
+            </div>
+            <div style="margin-top: 100px">
+                <p
+                    style="margin-left: 50px; margin-top: 10px; font-family: 'Raleway', sans-serif; width: 100%; text-align: center; font-weight: 600;">
+                    Monthly Earnings</p>
+                <canvas class="upper" id="MonthlyReport" height="300"></canvas>
+            </div>
+            <div style="height: 100px; width: 100%; background-color: #f0f1f3;"></div>
+            {% else %}
+            <div style="margin-top: 100px;">
+                <p
+                    style="margin-left: 50px; margin-top: 10px; font-family: 'Raleway', sans-serif; width: 100%; text-align: center; font-weight: 600;">
+                    No Data Available</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+
+    <!-- Chart Scripts -->
+
+    <script>
+        Chart.defaults.global.defaultFontFamily = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+        Chart.defaults.global.defaultFontColor = '#292b2c';
+        // -- Area Chart Example
+        //
+        new Chart('dailyReport', {
+            type: 'line',
+            data: {
+                labels: [{% for date,data in daily.items %}'{{date}}',{%endfor%}],
+                datasets: [{
+                    label: "Revenue",
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(2,117,216,0.2)",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 20,
+                    pointBorderWidth: 2,
+                    data: [{% for date,data in daily.items %}'{{data.Revenue}}',{%endfor%}],
+                }],
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'date'
+                        },
+                        gridLines: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            maxTicksLimit: 5
+                        },
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+
+
+
+        new Chart('MonthlyReport', {
+            type: 'line',
+            data: {
+                labels: [{% for date,data in sales.items %}'{{date}}',{%endfor%}],
+                datasets: [{
+                    label: "Revenue",
+                    lineTension: 0.3,
+                    backgroundColor: "#ffce56",
+                    borderColor: "rgba(2,117,216,1)",
+                    pointRadius: 5,
+                    pointBackgroundColor: "rgba(2,117,216,1)",
+                    pointBorderColor: "rgba(255,255,255,0.8)",
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: "rgba(2,117,216,1)",
+                    pointHitRadius: 20,
+                    pointBorderWidth: 2,
+                    data: [{% for date,data in sales.items %}'{{data.Earned}}',{%endfor%}],
+                }],
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'date'
+                        },
+                        gridLines: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 7
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            maxTicksLimit: 5
+                        },
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+
+        var bar_ctx = document.getElementById('MedStatus').getContext('2d');
+
+        var purple_orange_gradient = bar_ctx.createLinearGradient(0, 0, 0, 600);
+        purple_orange_gradient.addColorStop(0, 'orange');
+        purple_orange_gradient.addColorStop(1, 'purple');
+
+        var bar_chart = new Chart(bar_ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for med in data.MedicineName %}'{{med}}',{%endfor%}],
+                datasets: [{
+                    label: 'Sales',
+                    data: {{ data.Frequency }},
+                    backgroundColor: purple_orange_gradient,
+                    hoverBackgroundColor: purple_orange_gradient,
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: 'purple'
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        }
+                    }],
+                    xAxes: [{
+                        barPercentage: 0.6,
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        }
+                    }]
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+
+        new Chart("quantitySale", {
+            type: "line",
+            data: {
+                labels: [{% for date,data in sales.items %}'{{date}}',{%endfor%}],
+                datasets: [{
+                    fill: false,
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(0,0,255,1.0)",
+                    borderColor: "rgba(0,0,255,0.5)",
+                    data: [{% for date,data in sales.items %}'{{data.Sold}}',{%endfor%}],
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        },
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        }
+                    }],
+                    xAxes: [{
+                        barPercentage: 0.6,
+                        gridLines: {
+                            color: "rgba(0, 0, 0, 0)",
+                        }
+                    }]
+                },
+                legend: { display: false },
+            }
+        });
+
+
+        const spkline = document.getElementById('sparkline').getContext('2d');
+        const chart = new Chart(spkline, {
+            type: 'line',
+            data: {
+                labels: [{% for date,data in sales.items %}'{{date}}',{%endfor%}],
+                datasets: [
+                    {
+                        data: [{% for date,data in sales.items %}{{data.Revenue}},{%endfor%}]
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+                legend: {
+                    display: false
+                },
+                elements: {
+                    line: {
+                        backgroundColor: "#161a27",
+                        borderColor: '#d87228',
+                        borderWidth: 2
+                    },
+                    point: {
+                        radius: 0
+                    }
+                },
+                tooltips: {
+                    enabled: false
+                },
+                scales: {
+                    yAxes: [
+                        {
+                            display: false
+                        }
+                    ],
+                    xAxes: [
+                        {
+                            display: false
+                        }
+                    ]
+                }
+            }
+        });
+
+
+        Chart.pluginService.register({
+            beforeDraw: function (chart) {
+                if (chart.config.options.elements.center) {
+                    // Get ctx from string
+                    var ctx = chart.chart.ctx;
+
+                    // Get options from the center object in options
+                    var centerConfig = chart.config.options.elements.center;
+                    var fontStyle = centerConfig.fontStyle || 'Arial';
+                    var txt = centerConfig.text;
+                    var color = centerConfig.color || '#000';
+                    var maxFontSize = centerConfig.maxFontSize || 75;
+                    var sidePadding = centerConfig.sidePadding || 20;
+                    var sidePaddingCalculated = (sidePadding / 100) * (chart.innerRadius * 2)
+                    // Start with a base font of 30px
+                    ctx.font = "30px " + fontStyle;
+
+                    // Get the width of the string and also the width of the element minus 10 to give it 5px side padding
+                    var stringWidth = ctx.measureText(txt).width;
+                    var elementWidth = (chart.innerRadius * 2) - sidePaddingCalculated;
+
+                    // Find out how much the font can grow in width.
+                    var widthRatio = elementWidth / stringWidth;
+                    var newFontSize = Math.floor(30 * widthRatio);
+                    var elementHeight = (chart.innerRadius * 2);
+
+                    // Pick a new font size so it will not be larger than the height of label.
+                    var fontSizeToUse = Math.min(newFontSize, elementHeight, maxFontSize);
+                    var minFontSize = centerConfig.minFontSize;
+                    var lineHeight = centerConfig.lineHeight || 25;
+                    var wrapText = false;
+
+                    if (minFontSize === undefined) {
+                        minFontSize = 20;
+                    }
+
+                    if (minFontSize && fontSizeToUse < minFontSize) {
+                        fontSizeToUse = minFontSize;
+                        wrapText = true;
+                    }
+
+                    // Set font settings to draw it correctly.
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
+                    var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
+                    ctx.font = fontSizeToUse + "px " + fontStyle;
+                    ctx.fillStyle = color;
+
+                    if (!wrapText) {
+                        ctx.fillText(txt, centerX, centerY);
+                        return;
+                    }
+
+                    var words = txt.split(' ');
+                    var line = '';
+                    var lines = [];
+
+                    // Break words up into multiple lines if necessary
+                    for (var n = 0; n < words.length; n++) {
+                        var testLine = line + words[n] + ' ';
+                        var metrics = ctx.measureText(testLine);
+                        var testWidth = metrics.width;
+                        if (testWidth > elementWidth && n > 0) {
+                            lines.push(line);
+                            line = words[n] + ' ';
+                        } else {
+                            line = testLine;
+                        }
+                    }
+
+                    // Move the center up depending on line height and number of lines
+                    centerY -= (lines.length / 2) * lineHeight;
+
+                    for (var n = 0; n < lines.length; n++) {
+                        ctx.fillText(lines[n], centerX, centerY);
+                        centerY += lineHeight;
+                    }
+                    //Draw text in center
+                    ctx.fillText(line, centerX, centerY);
+                }
+            },
+            options: {
+                legend: { display: false },
+            }
+        });
+
+
+        var config = {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    "Earned",
+                    "Spent",
+                    "Revenue"
+                ],
+                datasets: [{
+                    data: [{{earning.Earned}}, {{earning.shopPrice}},{{earning.Revenue}}],
+                    backgroundColor: [
+                        "#1d062d",
+                        "#c896ef",
+                        '#fd7311'
+                    ],
+                    hoverBackgroundColor: [
+                        "#161a27",
+                        "#36A2EB",
+                        '#fd7311'
+                    ]
+                }]
+            },
+            options: {
+                elements: {
+                    center: {
+                        text: '₹ {{earning.Earned}}',
+                        color: '#1d062d', // Default is #000000
+                        fontStyle: 'Arial', // Default is Arial
+                        sidePadding: 20, // Default is 20 (as a percentage)
+                        minFontSize: 25, // Default is 20 (in px), set to false and text will not wrap.
+                        lineHeight: 25 // Default is 25 (in px), used for when text wraps
+                    }
+                }
+            }
+        };
+
+        var erchart = document.getElementById("earningRatio").getContext("2d");
+        var myChart = new Chart(erchart, config);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <title>Inventory</title>
+
+    <style>
+        body {
+            background: rgb(83, 72, 121);
+            background: -moz-linear-gradient(45deg, rgba(83, 72, 121, 1) 5%, rgba(135, 26, 140, 1) 49%, rgba(222, 82, 176, 1) 84%);
+            background: -webkit-linear-gradient(45deg, rgba(83, 72, 121, 1) 5%, rgba(135, 26, 140, 1) 49%, rgba(222, 82, 176, 1) 84%);
+            background: linear-gradient(45deg, rgba(83, 72, 121, 1) 5%, rgba(135, 26, 140, 1) 49%, rgba(222, 82, 176, 1) 84%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#534879", endColorstr="#de52b0", GradientType=1);
+        }
+
+
+        .card {
+            padding: 20px 50px 10px 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background-color: rgba(17, 25, 40, 0.75);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.125);
+            width: 50vw;
+            min-height: 200px;
+            margin: 0 20px 0 20px;
+        }
+
+        nav {
+            background-color: rgb(11, 13, 56);
+        }
+
+        .formwrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* flex-direction: column; */
+            width: 100vw;
+            height: 90vh;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            width: 400px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+        }
+
+        input[type='date'] {
+            width: 300px;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .ui-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            float: left;
+            display: none;
+            min-width: 160px;
+            padding: 4px 0;
+            margin: 0 0 10px 25px;
+            list-style: none;
+            background-color: #ffffff;
+            border-color: #ccc;
+            border-color: rgba(0, 0, 0, 0.2);
+            border-style: solid;
+            border-width: 1px;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            -webkit-background-clip: padding-box;
+            -moz-background-clip: padding;
+            background-clip: padding-box;
+            *border-right-width: 2px;
+            *border-bottom-width: 2px;
+        }
+
+        .ui-menu-item>a.ui-corner-all {
+            display: block;
+            padding: 3px 15px;
+            clear: both;
+            font-weight: normal;
+            line-height: 18px;
+            color: #555555;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .ui-state-hover,
+        .ui-state-active {
+            color: #ffffff;
+            text-decoration: none;
+            background-color: #0088cc;
+            border-radius: 0px;
+            -webkit-border-radius: 0px;
+            -moz-border-radius: 0px;
+            background-image: none;
+        }
+
+        .ui-menu-item>div {
+            margin-left: 5px;
+        }
+
+        .ui-helper-hidden-accessible {
+            display: none;
+        }
+
+        .showalts {
+            margin-top: 5px;
+            color: white;
+        }
+
+        .inpchange {
+            width: 60px;
+            border-radius: 5px;
+            border: none;
+            padding-left: 5px;
+        }
+
+        .close {
+            height: 20px;
+        }
+
+        ::-webkit-scrollbar {
+            -webkit-appearance: none;
+            width: 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <a class="nav-link active" aria-current="page" href="/">Add New</a>
+        <a class="nav-link" href="/billing">Billing</a>
+        {% if user.is_authenticated %}
+        <a class="nav-link me2" href="/analyse">Dashboard</a>
+        <a class="nav-link" style="float: right;" href="/signout">Logout</a>
+        {% else %}
+        <a class="nav-link" style="float: right;"  href="/login">Login</a>
+        {% endif %}
+    </nav>
+    <div class="formwrap">
+        {% csrf_token %}
+        <div style="height: 90vh; margin-top: 30px;">
+            <div class="card" style=" min-height: 150px; padding-top: 7px">
+                <input type="text" placeholder="Patient Name" id="pName">
+                <input type="text" placeholder="Doctor Name" id="Dname">
+                <div>
+                    <label for="discount" style="color: white;">% Discount </label>
+                    <input type="number" placeholder="Discount" value="0" min="0" max="80"
+                        style="margin-top: 10px; width: 200px; margin-left: 110px; border-radius: 5px; border: none; padding-left: 10px;"
+                        onchange="DiscountedPrice()" name="discount" id="discount">
+                </div>
+            </div>
+            <div class="card" style="margin-top: 25px;">
+                <div>
+                    <input type="text" name="medicine" placeholder="Find By Composition" id="Composition_search">
+                    <img src="https://img.icons8.com/office/30/000000/checked--v1.png" alt="" style="margin-left:2px; height: 43px; cursor: pointer;"
+                        onclick="medAlt()">
+
+                </div>
+                <div>
+                    <input type="text" name="medicine" placeholder="Find Medicine" id="medicine">
+                    <input type="number" name="mednums" id="mednums"
+                        style="width: 40px; height:43px; border-radius: 5px; border: none; text-align: center;"
+                        placeholder="0" min="0">
+                    <img src="https://img.icons8.com/office/30/000000/checked--v1.png" alt="" style="margin-left:2px; height: 43px; cursor: pointer;"
+                        onclick="selectThis()">
+                </div>
+                <button onclick="findALternative()" class="btn btn-info" style="margin-top: 30px; display: none;"
+                    id="altbtn">Find Alternative</button>
+                <div id="alternatives">
+                </div>
+            </div>
+        </div>
+        <div class="card" style="justify-content: flex-start; color: aqua; height: 85vh;">
+            <h5 style="margin-bottom: 20px;">Choosen Medicines</h5>
+            <div style=" width: 100%; height: 60vh; overflow-y: scroll;">
+                <table class="table" style="color: white;">
+                    <tr>
+                        <th scope="col">Medicine</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Total</th>
+                    </tr>
+                </table>
+            </div>
+            <div class="totalbill"
+                style="position: absolute; bottom: 15px; width: 80%; border-top: 1px solid black; padding-top: 5px; display: flex; align-items: center; justify-content: flex-end;">
+                <button class="btn btn-primary" style="position: absolute; left: 20px;"
+                    onclick="GenerateBill()">Generate Bill</button>
+                <div>
+                    Subtotal: <span id="subtotal">0</span>
+                    <br>
+                    Discount: <span><input type="text" style="width: 80px; height: 30px; margin-left: 10px;"
+                            id="discounted" onchange="NewDiscount()" value="0"></span>
+                    <br>
+                    Total: <strong><span id="total">0</span></strong>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- <script src="/static/bill.js"></script> -->
+<script>
+    document.getElementById('medicine').focus();
+    let discountMoney = 0;
+takenMedicines = {};
+let nextMedNo = 0;
+
+const GenerateBill = () => {
+  let patient = document.getElementById("pName").value;
+  let doctor = document.getElementById("Dname").value;
+  let total = document.getElementById("total").innerHTML;
+  let subtotal = document.getElementById("subtotal").innerHTML;
+  let discount = document.getElementById("discounted").value;
+  if (patient == "" || doctor == "") {
+    alert("Please fill all the fields");
+    return;
+  }
+  if (total == 0) {
+    alert("Please add some medicines");
+    return;
+  }
+  if (discount == "") {
+    discount = 0;
+  }
+  let medicines = takenMedicines;
+  let data = {
+    patient,
+    doctor,
+    total,
+    subtotal,
+    discount,
+    medicines,
+  };
+  fetch("/api/bill", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0].value,
+    },
+    body: JSON.stringify(data),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data);
+      if (data.status == "success") {
+        window.location.href = "/bill/" + data.billId;
+      }
+      if (data.status == "StockOut") {
+        alert(
+          `Item ${data.med} is not sufficient in stock\nPlease reduce the quantity\nCurrent stock is ${data.stock}`
+        );
+      }
+    });
+};
+
+const syncTotal = () => {
+  let ttl =
+    Number(document.getElementById("subtotal").innerHTML) -
+    Number(document.getElementById("discounted").value);
+  if (ttl < 0) {
+    ttl = 0;
+  }
+  document.getElementById("total").innerHTML = Math.ceil(ttl);
+};
+
+const NewDiscount = () => {
+  let newDiscount = document.getElementById("discounted").value;
+  let newprice =
+    Number(document.getElementById("subtotal").innerHTML) - Number(newDiscount);
+  // console.log("Discounted price: ",newprice, "Discount: ",newDiscount , Number(document.getElementById("subtotal").innerHTML));
+  if (newprice <= 0) {
+    alert("Discount is too high");
+    return;
+  }
+  discountMoney = newDiscount;
+  //   document.getElementById("total").innerText = newprice;
+  syncTotal();
+};
+
+const DiscountedPrice = () => {
+  let discount = document.getElementById("discount").value;
+  let total = document.getElementById("subtotal").innerHTML;
+  let discounted = Math.round(((total * discount) / 100) * 100) / 100;
+  discountMoney = discounted;
+  document.getElementById("discounted").value = discounted;
+  document.getElementById("total").innerHTML = Math.ceil(total - discounted);
+};
+
+const getPrice = async (medicine) => {
+  const response = await fetch(`/api/medicine/${medicine}`);
+  const data = await response.json();
+  console.log(data.price);
+  return data;
+};
+const changequantity = (tab, medNo) => {
+  console.log(medNo, tab);
+  med = takenMedicines[medNo].medicine;
+  const medqty = document.getElementById(med).value;
+  console.log(medqty, medNo);
+  let oldqty = takenMedicines[medNo].quantity;
+  const medprice = document.getElementById(`row-${medNo}`).childNodes[2]
+    .innerHTML;
+  console.log(medprice);
+  const total = medprice * medqty;
+  document.getElementById(`row-${medNo}`).childNodes[3].innerHTML =
+    Math.round(total * 100) / 100;
+  takenMedicines[medNo].quantity = medqty;
+  console.log(takenMedicines);
+  let subt = document.getElementById("subtotal").innerHTML;
+  subt = Number(subt) - Math.round(oldqty * medprice * 100) / 100;
+  subt = Number(subt) + Math.round(medqty * medprice * 100) / 100;
+  document.getElementById("subtotal").innerHTML = subt;
+  syncTotal();
+};
+
+const removeRow = (rowid) => {
+  console.log(rowid);
+  let qty = takenMedicines[rowid].quantity;
+  const medprice = document.getElementById(`row-${rowid}`).childNodes[2]
+    .innerHTML;
+  let subt = document.getElementById("subtotal").innerHTML;
+  subt = Number(subt) - qty * medprice;
+  document.getElementById("subtotal").innerHTML = subt;
+  syncTotal();
+  document.getElementById(`row-${rowid}`).remove();
+  delete takenMedicines[rowid];
+  console.log(takenMedicines);
+};
+
+const selectThis = async () => {
+  let medicine = document.getElementById("medicine").value;
+  let quantity = document.getElementById("medicine").nextElementSibling.value;
+
+  if (quantity == "0" || quantity == 0) {
+    alert("Select Quantity");
+    return;
+  }
+  const response = await fetch(`/api/medicine/${medicine}`);
+  const data = await response.json();
+  let price = data.price;
+  let qty = data.quantity;
+  if (quantity > qty) {
+    alert(
+      `${medicine} is not sufficient in stock\nPlease reduce the quantity\nCurrent stock is ${qty}`
+    );
+    let quantity = (document.getElementById(
+      "medicine"
+    ).nextElementSibling.value = 0);
+    return;
+  }
+  console.log(price);
+  let table = document.getElementsByTagName("table")[0];
+  let row = table.insertRow(1);
+  let cell1 = row.insertCell(0);
+  let cell2 = row.insertCell(1);
+  let cell3 = row.insertCell(2);
+  let cell4 = row.insertCell(3);
+  let cell5 = row.insertCell(4);
+
+  x = document.createElement("input");
+  x.setAttribute("type", "number");
+  x.setAttribute("id", medicine);
+  x.setAttribute("min", "0");
+  x.setAttribute("class", "inpchange");
+  x.setAttribute("onchange", `changequantity(${quantity},${nextMedNo})`);
+  x.setAttribute("value", quantity);
+
+  clse = document.createElement("img");
+  clse.setAttribute("src", "https://img.icons8.com/flat-round/64/000000/delete-sign.png");
+  clse.setAttribute("onclick", `removeRow(${nextMedNo})`);
+  clse.setAttribute("class", "close");
+
+  cell1.innerHTML = medicine;
+  cell2.appendChild(x);
+  cell3.innerHTML = price;
+  cell4.innerHTML = Math.round(price * quantity * 100) / 100;
+  cell5.appendChild(clse);
+  document.getElementById("medicine").value = "";
+  document.getElementById("medicine").nextElementSibling.value = "0";
+  document.getElementById("altbtn").style.display = "none";
+  document.getElementById("alternatives").innerHTML = "";
+  row.setAttribute("id", `row-${nextMedNo}`);
+  let old = document.getElementById("subtotal").innerHTML;
+  // console
+  document.getElementById("subtotal").innerHTML =
+    Math.round(Number(price * quantity) * 100) / 100 + Number(old);
+  syncTotal();
+  takenMedicines[nextMedNo++] = {
+    medicine: medicine,
+    quantity: quantity,
+  };
+  document.getElementById('medicine').focus();
+};
+
+$(function () {
+  $("#medicine").autocomplete({
+    delay: 300,
+    source: function (request, response) {
+      var medSearch = request.term;
+      var meds = [];
+      $.ajax({
+        url: "/findMedicine",
+        data: {
+          med: medSearch,
+        },
+        method: "POST",
+        headers: {
+          "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0]
+            .value,
+        },
+        success: function (data) {
+          $.each(data, function (key, value) {
+            console.log(value);
+            meds.push(value);
+          });
+          response(meds);
+          if (meds.length == 0) {
+            document.getElementById("altbtn").style.display = "block";
+            console.log(meds);
+          }
+          if (meds.length != 0) {
+            document.getElementById("altbtn").style.display = "none";
+            // console.log("--", meds[0]);
+          }
+        },
+      });
+    },
+  });
+});
+
+const choosethis = (medName) => {
+  console.log(medName);
+  document.getElementById("medicine").value = medName;
+  document.getElementById('mednums').focus();
+  
+};
+
+const showAlternative = (data) => {
+  $("#alternatives").html("");
+  $.each(data, function (key, value) {
+    console.log(value);
+    if (key == "FetchedComp") {
+      alert(`Found with differnt Mg: ${value[0]}\nIn store:  ${value[1]}`);
+      return;
+    }
+    $("#alternatives").append(
+      `<div class="showalts"><strong>${key}</strong> - price: ${value[1]} Quantity: ${value[0]} <span onclick="choosethis('${key}')"><img src = "https://img.icons8.com/emoji/48/000000/check-mark-emoji.png" height="30px"></span></div>`
+    );
+  });
+};
+
+function findALternative() {
+  var med = document.getElementById("medicine").value;
+  $.ajax({
+    url: "/findAlternative",
+    data: {
+      med: med,
+    },
+    method: "POST",
+    headers: {
+      "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0].value,
+    },
+    success: function (data) {
+      showAlternative(data);
+      console.log("--",data.keys, data.values, data);
+      t = JSON.stringify(data);
+      console.log("-----", t.length);
+      if (t.length == 2) {
+        alert("Not Found");
+        return;
+      }
+    },
+  });
+}
+
+$("#mednums").on("keypress", function (e) {
+  if (e.which == 13) {
+    selectThis();
+  }
+});
+
+$(function () {
+  $("#Composition_search").autocomplete({
+    delay: 300,
+    source: function (request, response) {
+      var medSearch = request.term;
+      var meds = [];
+      $.ajax({
+        url: "/findMedicineByComposition",
+        data: {
+          comp: medSearch,
+        },
+        method: "POST",
+        headers: {
+          "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0]
+            .value,
+        },
+        success: function (data) {
+          $.each(data, function (key, value) {
+            console.log("*****",value);
+            meds.push(value);
+          });
+          response(meds);
+          console.log(meds);
+          if (meds.length == 0) {
+            document.getElementById("altbtn").style.display = "block";
+            console.log(meds);
+          }
+          if (meds.length != 0) {
+            document.getElementById("altbtn").style.display = "none";
+            console.log("--", meds);
+          }
+        },
+      });
+    },
+  });
+});
+
+$("#Composition_search").on("keypress", function (e) {
+  if (e.which == 13) {
+    medAlt();
+  }
+});
+
+function medAlt() {
+  var med = document.getElementById("Composition_search").value;
+  $.ajax({
+    url: "/findMedicineByName",
+    data: JSON.stringify({
+      med: med,
+    }),
+    method: "POST",
+    headers: {
+      "X-CSRFToken": document.getElementsByName("csrfmiddlewaretoken")[0].value,
+    },
+    success: function (data) {
+        document.getElementById("Composition_search").value = "";
+      showAlternative(data);
+      console.log("--",data.keys, data.values, data);
+      t = JSON.stringify(data);
+      console.log("-----", t.length);
+      if (t.length == 2) {
+        alert("Not Found");
+        return;
+      }
+    },
+  });
+}
+</script>
+
+</body>
+
+</html>
